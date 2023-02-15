@@ -56,10 +56,13 @@ importe = 9.50;
 update clientes set direccion = 'Pollígono Ansu Fati, Calle Messi, Nave 20' where nif = '23124234G';
 
 -- Al escritor Osaar Wilde hay que añadirle también el premio planeta
-update autores set premios = + 'Planeta' where id = 2;
+update autores set premios = concat_ws(', ', premios, 'planeta')  where nombre = 'Oscar Wilde';
 
+-- Se decrementa el precio de venta de todos los libros en un 10%
+update libros set precio_venta = precio * 0.90; -- precio - (precio*0.10)
 
-
+-- Incrementa precio de todos los libros de las editoriales Alfaguara y Anaya en un 10%
+update libros set precio_venta = precio + (precio*0.10) where editorial = 'Alfaguara' and 'Anaya';
 
 
 
