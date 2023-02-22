@@ -39,7 +39,7 @@ SELECT
     departamentos.localizacion,
     departamentos.componentes,
     departamentos.jefe_departamento_id,
-    CONCAT_WS(', ',
+    CONCAT_WS(', ', -- > Concatena nombre y apellido de empleados
             empleados.apellidos,
             empleados.nombre) AS Jefe_departamento
 FROM
@@ -62,9 +62,12 @@ SELECT
     empleados.apellidos,
     empleados.nss,
     empleados.salario,
-    empleados.supervisor_id
+    empleados.supervisor_id supervisores,
+    concat_ws(', ', supervisores.apellidos, supervisores.nombre) Supervisor
 FROM
-    empleados where empleados.supervisor_id = empleados.id; -- > Sale en blanco
+    empleados inner join 
+    empleados supervisores on emplados.supervisor_id = supervisores.id 
+    order by empleados.supervisor_id = empleados.id; -- > Sale en blanco
 
 
 # 4. Beneficiarios con Empleados
@@ -96,7 +99,7 @@ Proyectos: id, descripcion, num_proyecto, localizacion, fecha_inicio, fecha_fin,
 Departamento: nombre (departamento)*/
 
 SELECT 
-    *
+    *  -- > falta poner las tablas de busqueda
 FROM
     proyectos
         INNER JOIN
@@ -121,9 +124,9 @@ proyectos.localizacion,
 proyectos.fecha_inicio,
 proyectos.fecha_fin,
 proyectos.departamento_id,
-departamentos.nombre,
-empleados.nombre,
-empleados.apellidos
+departamentos.nombre nombreDepartamento,
+empleados.nombre nombreEmpleado,
+empleados.apellidos -- > Falta concat() 
 FROM
     proyectos
         INNER JOIN
