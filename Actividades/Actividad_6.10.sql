@@ -21,7 +21,7 @@ Este listado deberá mostrar también aquellos empleados que no tienen asignado 
 
 SELECT 
     empleados.id,
-    empleados.nombre,
+    empleados.nombre,  -- > HACER CONCACT
     empleados.apellidos,
     empleados.nss,
     TIMESTAMPDIFF(YEAR, fecha_nac, NOW()) AS edad, -- > Operador timestampdiff() para calcular edad por fecha_nac
@@ -32,7 +32,7 @@ FROM
         left JOIN
     departamentos ON empleados.departamento_id = departamentos.id;
 
-# Actividad 2.
+# Actividad 2. -- > MIRAR SPCRIPT EN FOTO
 /* Mostrar detalles a cerca de los departamentos.
 Detalles:
 departamentos.id
@@ -55,7 +55,8 @@ CONCAT_WS(', ',
 FROM
     departamentos
         left JOIN
-    empleados ON empleados.departamento_id = departamentos.id
+    empleados jef ON empleados.departamento_id = jef.id
+    left join emp on empleados.departamento_id = departamentos.id
     order by departamentos.id;
 
 # Actividad 3.
@@ -70,24 +71,22 @@ empleados_proyectos.horas
 Ordenar por horas trabajadas con criterio descendente. Usar alias en las columnas que lo precisen.
 Mostrará también aquellos empleados que no hayan trabajado en ningún proyecto.*/
 
-SELECT 
-
-empleados.id,
-empleados.nombre as nombreEmpleado,
-empleados.apellidos,
-departamentos.nombre as nombreDepartamento,
-empleados_proyectos.horas,
-proyectos.descripcion
-    
+SELECT -- > CONCATENAR NOMBRE, APELLIDOS
+    empleados.id,
+    empleados.nombre AS nombreEmpleado,
+    empleados.apellidos,
+    departamentos.nombre AS nombreDepartamento,
+    empleados_proyectos.horas,
+    proyectos.descripcion
 FROM
     empleados_proyectos
-        left JOIN
+        LEFT JOIN
     proyectos ON empleados_proyectos.proyecto_id = proyectos.id
-        right JOIN
+        RIGHT JOIN
     empleados ON empleados_proyectos.empleado_id = empleados.id
-        left JOIN
+        LEFT JOIN
     departamentos ON empleados.departamento_id = empleados.id
-    order by empleados_proyectos.horas desc;
+ORDER BY empleados_proyectos.horas DESC;
     
     
 # Actividad 4. 
