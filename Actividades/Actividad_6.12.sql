@@ -26,7 +26,7 @@ FROM
 WHERE
     poblacion = 'Ubrique'
         AND email LIKE '%ieslosremedios.org'
-ORDER BY nombre;
+ORDER BY clientes.nombre;
         
 /* 2. Script - ventas
 Mostrar las 3 mejores ventas realizadas en el año 2014.
@@ -35,19 +35,21 @@ Mostrar las 3 mejores ventas realizadas en el año 2014.
         Columnas: id, nombre cliente, fecha de la venta, importe_bruto, importe_iva e importe_total
         Orden: por importe de mayor a menor. */
         
-	select
+	SELECT 
     ventas.id,
-    clientes.nombre as nombre_cliente,
+    clientes.nombre AS nombre_cliente,
     ventas.fecha,
     ventas.importe_bruto,
     ventas.importe_iva,
     ventas.importe_total
-    from
-    ventas inner join
-    clientes on ventas.cliente_id = clientes.id
-    where year(ventas.fecha) = 2014
-    order by importe_total
-    limit 3;
+FROM
+    ventas
+        INNER JOIN
+    clientes ON ventas.cliente_id = clientes.id
+WHERE
+    YEAR(ventas.fecha) = 2014
+ORDER BY importe_total desc  -- > TENER EN CUENTA ORDEN POR DEFECTO
+LIMIT 3;
     
     
 /* 3. Script - libros
@@ -77,7 +79,8 @@ WHERE
 ORDER BY libros.id; 
 
 /* 4. Script - libros
-Mostrar detalles de los libros relacionadas con la temática PHP y Bases de Datos, además el precio de venta sea inferior a 30 €
+Mostrar detalles de los libros relacionadas con la temática PHP y Bases de Datos, 
+además el precio de venta sea inferior a 30 €
         Tabla principal: libros, autores, editoria
         Condición: título esté relacionados con el lenguaje de programación PHP y que además el precio de venta sea inferior 30 €. 
         Columnas: id, título, autor, editorial, stock, precio_coste, precio_venta
@@ -98,8 +101,8 @@ FROM
         INNER JOIN
     editoriales ON libros.editorial_id = editoriales.id
 WHERE
-    titulo LIKE '%PHP%'
-        OR '%Bases de Datos%'
+    (libros.titulo LIKE '%PHP%'
+        OR '%Bases de Datos%')
         AND libros.precio_venta < 30
 ORDER BY libros.id;
         
@@ -125,7 +128,7 @@ libros.precio_venta,
     autores ON libros.autor_id = autores.id
         INNER JOIN
     editoriales ON libros.editorial_id = editoriales.id
-    where editoriales.nombre = 'Anaya' or 'Alfaguara'
+    where editoriales.nombre like 'Anaya' or 'Alfaguara'  -- > Se puede poner IN ('Anaya', 'Alfaguara') Así no ExpReg y SIEMPRE ES OR
     order by margen_beneficio desc;
         
         
@@ -152,7 +155,9 @@ FROM
         INNER JOIN
     editoriales ON libros.editorial_id = editoriales.id
 WHERE
-    libros.precio_coste IN (SELECT 
+    editoriales.nombre LIKE 'Anaya'
+        OR 'Alfaguara'
+        AND libros.precio_coste IN (SELECT 
             libros.precio_coste
         FROM
             libros
@@ -164,25 +169,26 @@ ORDER BY libros.id;
 Se desea obtener el volumen total de ventas realizadas a cada cliente en 2014.
         Tabla principal: ventas y clientes
         Condición: sólo las ventas 2014
-        Columnas: id del cliente, nombre cliente, número de ventas, venta máxima, venta mínima y suma. La función de agregado de estos tres últimos campos se aplicarán sobre importe_total de cada venta.
+        Columnas: id del cliente, nombre cliente, número de ventas, venta máxima, venta mínima y suma. 
+        La función de agregado de estos tres últimos campos se aplicarán sobre importe_total de cada venta.
         Orden: suma de ventas totales
         Notas: se precisa agrupación registros  */
 
 SELECT 
     clientes.id AS idCliente,
     clientes.nombre AS Cliente,
-    COUNT(ventas.cliente_id) AS NumVentas,
-    MAX(ventas.cliente_id) AS VentaMAx,
-    MIN(ventas.cliente_id) AS VentaMin,
-    SUM(ventas.cliente_id) AS SumaVentas
+    COUNT(ventas.id) AS NumVentas,
+    MAX(ventas.importe_total) AS VentaMAx,
+    MIN(ventas.importe_total) AS VentaMin,
+    SUM(ventas.importe_total) AS SumaVentas
 FROM
     ventas
         INNER JOIN
     clientes ON ventas.cliente_id = clientes.id
 WHERE
     YEAR(ventas.fecha) = 2014
-GROUP BY clientes.id
-ORDER BY SumaVentas;
+GROUP BY ventas.cliente_id
+ORDER BY SumaVentas DESC;  -- > OJO CON EL ORDEN POR DEFECTO
 
 
 /* 
@@ -198,7 +204,7 @@ SELECT
     editoriales.id,
     editoriales.nombre AS editorial,
     SUM(lineasventas.cantidad) AS LibrosVendidos,
-    SUM(ventas.importe_total) AS ImporteTotal
+    SUM(lineasventas.importe) AS ImporteVentas
 FROM
     libros
         INNER JOIN
@@ -207,7 +213,7 @@ FROM
     lineasventas ON lineasventas.libro_id = libros.id
         INNER JOIN
     ventas ON lineasventas.venta_id = ventas.id
-GROUP BY editoriales.id
+GROUP BY libros.editorial_id
 ORDER BY LibrosVendidos DESC;
 
 
@@ -229,12 +235,10 @@ CREATE VIEW ventas_editoriales AS
         lineasventas ON lineasventas.libro_id = libros.id
             INNER JOIN
         ventas ON lineasventas.venta_id = ventas.id
-    GROUP BY editoriales.id
+    GROUP BY libros.editorial_id
     ORDER BY LibrosVendidos DESC;
     
     select * from ventas_editoriales where LibrosVendidos > 50;
-
-
 
 /* 10. Insertar - Libros
 Insertar un libro con datos válidos en la tabla libros a partir de los siguientes requisitos:
@@ -304,8 +308,18 @@ UPDATE libros set libros.precio_venta = libros.precio_venta*1.10 where editorial
 
 
 /* 14. Update - Libros
-Se desea reducir el precio de los libros que no se vendieron en 2014 en un 30%. 
-update libros set libros.precio_venta = libros.precio_venta*0.70 where (year select libros from ventas (ventas.fecha) = 2014) */
+Se desea reducir el precio de los libros que no se vendieron en 2014 en un 30%.  */
+
+UPDATE libros 
+SET 
+    libros.precio_venta = libros.precio_venta * 0.70
+WHERE
+    lineasventas.venta_id NOT IN (SELECT DISTINCT
+            lineasventas.libros_id
+        FROM
+            ventas
+                INNER JOIN
+            lineasventas ON lineasventas.venta_id = ventas.id where YEAR(ventas.fecha) = '2014'); 
 
 
 

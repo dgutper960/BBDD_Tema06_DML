@@ -61,10 +61,10 @@ SELECT
 FROM
     beneficiarios
 WHERE
-    YEAR(fecha_nac) = (SELECT 
+    YEAR(fecha_nac) = all (SELECT 
             YEAR(fecha_nac)
         FROM
-            beneficiarios
+            empleados
         WHERE
             nombre LIKE '%ALice%');
             
@@ -139,7 +139,17 @@ WHERE
 # Obtener aquellos empleados cuyo salario coincida con el salario de alguno de
 -- los empleados del departamento 2
 
-select * from empleados where salario IN (select distinct salario from empleados where departamentos_id = '2');
+SELECT 
+    *
+FROM
+    empleados
+WHERE
+    salario IN (SELECT DISTINCT
+            salario
+        FROM
+            empleados
+        WHERE
+            departamentos_id = '2');
 
 # Obtener los departamentos que no tengan empleados.
 SELECT 
@@ -152,7 +162,7 @@ WHERE
         FROM
             empleados
         WHERE
-            empleados.departamentos_id = departamentos.id);
+            empleados.departamento_id = departamentos.id);
             
 # Obtener los departamentos que tengan empleados
 SELECT 
@@ -165,7 +175,7 @@ WHERE
         FROM
             empleados
         WHERE
-            empleados.departamentos_id = departamentos.id);
+            empleados.departamento_id = departamentos.id);
             
 SELECT 
     *
@@ -273,7 +283,7 @@ SELECT
 FROM
     empleados
 WHERE
-    salario > (SELECT 
+    salario > any (SELECT 
             MIN(salario)
         FROM
             empledos
@@ -282,7 +292,7 @@ WHERE
 
 # Obtener los datos de los empleados cuyo salario sea MENOR a todos los
 -- salarios correspondientes a los empleados del departamento 1.
-select * from empleados where salario < all (select distinct empleados where departamentps); -- revisar
+select * from empleados where salario < all (select distinct salario from empleados where departamento_id = 1); -- revisar
 
 SELECT 
     *

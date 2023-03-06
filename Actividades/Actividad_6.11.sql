@@ -10,27 +10,27 @@ use empresa;
 #  Mostrar las columnas: id, Departamento y el alias NumEmpleados.
 
 SELECT 
-    departamentos.id,
-    departamentos.nombre departamento,
+    empleados.departamentos_id, -- > esta podría ser -> departamentos.id
+    departamentos.nombre as departamento,
     COUNT(*) NumEmpeados
 FROM
     empleados
         INNER JOIN
     departamentos ON empleados.departamento_id = departamentos.id
-GROUP BY empleados.departamento_id;
+GROUP BY empleados.departamento_id; -- > OJO CON ESTO --> Quiero agrupar los empleados por departamento
 
 # 2 Obtener el número de empleados que hay en cada departamento cuyo sueldo esté por encima de los 30000 anuales.
 #  Mismas columnas que el ejercicio anterior.
 SELECT 
     departamentos.id,
-    departamentos.nombre departamento,
+    departamentos.nombre as departamento,
     COUNT(*) NumEmpeados
 FROM
     empleados
         INNER JOIN
     departamentos ON empleados.departamento_id = departamentos.id
 WHERE
-    salario > 30000
+    salario > 30000   -- > Primero filtro y luego agrupo, por eso lo hacemos con where
 GROUP BY empleados.departamento_id;
 
 # 3 Obtener el número total de empleados que hay en cada departamento
@@ -40,7 +40,7 @@ GROUP BY empleados.departamento_id;
 SELECT 
     departamentos.id,
     departamentos.nombre as departamento,
-    COUNT(*) NumEmpeados
+    COUNT(*) NumEmpeados  -- > CUENTA EL NÚM DE ELEMENTOS QUE HAY EN CADA GRUPO
 FROM
     empleados
         INNER JOIN
@@ -56,20 +56,20 @@ SELECT
     COUNT(*) Nempleados
 FROM
     empleados
-GROUP BY empleados.fecha_nac;
+GROUP BY year(fecha_nac); -- > NO empleados.fecha_nac
 
 
 # 5 Sobre la tabla Empleados_proyectos, obtener la suma total de horas trabajadas en cada proyecto.
 #  Mostrar id, Proyecto y HorasAcumuladas.
 SELECT 
-    proyectos.id,
-	proyectos.descripcion,
+    empleados_proyectos.proyecto_id,
+	proyectos.descripcion as proyecto,
     SUM(empleados_proyectos.horas) HorasAcumuladas
 FROM
     empleados_proyectos
         INNER JOIN
     proyectos ON empleados_proyectos.proyecto_id = proyectos.id
-    group by proyectos.descripcion
+    group by empleados_proyectos.proyecto_id  -- > Estaba mal (proyectos.id)
     order by proyectos.id;
 
 
@@ -78,14 +78,14 @@ FROM
 SELECT 
     supervisor.id as idSupervisor,
     CONCAT_WS(', ',
-            supervisor.nombre,
+            supervisor.nombre,  -- > supervisor es el uso de alias (inner join) como nombre de tabla
             supervisor.apellidos) AS NomSupervisor,
     COUNT(empleados.id) AS numDependientes
 FROM
     empleados
-        INNER JOIN
+        INNER JOIN  -- > RELACCIÓN REFLEXIVA	
     empleados supervisor ON empleados.supervisor_id = supervisor.id
-GROUP BY supervisor.id;
+GROUP BY empleados.supervisor_id; -- Agrupamos por supervisor id de la tabla empleados 
 
 
 # 7. Obtener para cada departamento la siguiente información estadística:
@@ -100,12 +100,12 @@ GROUP BY supervisor.id;
 
 SELECT 
     departamentos.id,
-    departamentos.nombre as nomDepartamento,
+    departamentos.nombre as Departamento,
     CONCAT_WS(', ',
             jefe.nombre,
             jefe.apellidos) AS jefeDepartamento,
  count(empleados.id) numEmpleados,
- avg(empleados.salario) medSalarios,
+ avg(empleados.salario) SalarioMed,
  max(empleados.salario) SalarioMAX,
  min(empleados.salario) SalarioMIN,
  sum(empleados.salario) SumaSalarios
@@ -115,7 +115,7 @@ FROM
     empleados ON empleados.departamento_id = departamentos.id
         INNER JOIN
     empleados as jefe on departamentos.jefe_departamento_id = jefe.id
-    group by departamentos.id;
+    group by empleados.departamento_id; -- > Lo de siempree
 
 # 8. Obtener la siguiente información:
 # a. id, NSS de la tabla empleados
@@ -128,12 +128,12 @@ empleados.nss,
     CONCAT_WS(', ',
             empleados.nombre,
             empleados.apellidos) AS Empleado,
-    COUNT(beneficiarios.id) AS TotalBeneficiarios
+    COUNT(beneficiarios.id) AS NúmBeneficiarios
 FROM
     empleados
         INNER JOIN
     beneficiarios ON beneficiarios.empleado_id = empleados.id
-GROUP BY empleados.id;
+GROUP BY beneficiarios.empleado_id; -- > La agrupación OJO
 
 # 9 Mostrar el número de beneficiarios de cada departamento
 # (intervienen las tablas Empleados, Departamento y Dependientes). 
@@ -141,17 +141,18 @@ GROUP BY empleados.id;
 # a. id de Departamento 
 # b. Nombre del Departamento
 # c. Función de Agregación. Número de Beneficiarios
+
 SELECT DISTINCT
     departamentos.id,
-    departamentos.nombre,
-    COUNT(beneficiarios.id) AS Num_Beneficiarios
+    departamentos.nombre as departamento,
+    COUNT(beneficiarios.id) AS Num_Beneficiarios -- > EN LOS COUNT(*) ES MENOS ARRIESGADO PERO MÁS DESCRIPTIVO
 FROM
     beneficiarios
         INNER JOIN
     empleados ON beneficiarios.empleado_id = empleados.id
         INNER JOIN
     departamentos ON empleados.departamento_id = departamentos.id
-GROUP BY departamentos.id;
+GROUP BY empleados.departamento_id;
 
 /* 10 Obtener el número de horas acumuladas en cada proyecto, mostrando la siguiente información:
 a. Id de Proyecto
@@ -160,9 +161,9 @@ c. Nombre de Departamento
 d. Función Agregación SUM a partir de empleados_proyecto */
 SELECT 
     proyectos.id,
-    proyectos.descripcion as Proyecto,
-    departamentos.nombre as Departamento,
-    SUM(empleados_proyectos.horas) Horas_Acumuladas
+    proyectos.descripcion AS Proyecto,
+    departamentos.nombre AS Departamento,
+    SUM(empleados_proyectos.horas) AS Horas_Acumuladas  -- > AL SUM SÍ HAY QUE PONER LA COLUMNA
 FROM
     empleados_proyectos
         INNER JOIN
@@ -171,7 +172,7 @@ FROM
     proyectos ON empleados_proyectos.proyecto_id = proyectos.id
         INNER JOIN
     departamentos ON empleados.departamento_id = departamentos.id
-    group by proyectos.id;
+GROUP BY empleados_proyectos.proyecto_id;
     
 /* 11 Mostrar el número de horas acumuladas por cada trabajador:
 a. empleado_id de empleado_proyecto
@@ -185,7 +186,7 @@ FROM
     empleados ON empleados_proyectos.empleado_id = empleados.id
         INNER JOIN
     proyectos ON empleados_proyectos.proyecto_id = proyectos.id
-GROUP BY empleados.id;
+GROUP BY empleados.id;  -- NO HACE FALTA CONECTAR TABLAS
 
 
 /* 12 Mostrar el número de horas acumuladas por cada trabajador en cada proyecto. Mostrar 
@@ -200,9 +201,9 @@ SELECT
     SUM(empleados_proyectos.horas) horas_acumuladas
 FROM
     empleados_proyectos
-        INNER JOIN
+        INNER JOIN  -- > TAMPOCO HACE FALTA CONECTAR
     empleados ON empleados_proyectos.empleado_id = empleados.id
-        INNER JOIN
+        INNER JOIN  -- > TAMPOCO HACE FALTA CONECTAR
     proyectos ON empleados_proyectos.proyecto_id = proyectos.id
 GROUP BY empleados_proyectos.empleado_id, empleados_proyectos.proyecto_id;
 
@@ -226,9 +227,9 @@ FROM
         INNER JOIN
     proyectos ON empleados_proyectos.proyecto_id = proyectos.id
 GROUP BY empleados_proyectos.empleado_id , empleados_proyectos.proyecto_id;
+-- OJO QUE EN ESTE HAY DOS COLUMNAS DE AGRUPACIÓN
 
 # 14 Misma consulta anterior pero mostrando la columna Descripción del Proyecto
-
 SELECT 
     empleados_proyectos.empleado_id AS idEmpleado,
     proyectos.descripcion as nombreProyecto,
@@ -243,16 +244,19 @@ FROM
     empleados ON empleados_proyectos.empleado_id = empleados.id
         INNER JOIN
     proyectos ON empleados_proyectos.proyecto_id = proyectos.id
-GROUP BY empleados_proyectos.empleado_id , empleados_proyectos.proyecto_id;
+GROUP BY empleados_proyectos.empleado_id, empleados_proyectos.proyecto_id;
+-- OJO QUE EN ESTE HAY DOS COLUMNAS DE AGRUPACIÓN
 
-/* 15 Obtener el sueldo medio de los empleados del departamento 3, Realizar este ejercicio usando la cláusula WHERE. */
+/* 15 Obtener el sueldo medio de los empleados del departamento 3, 
+Realizar este ejercicio usando la cláusula WHERE. */
 SELECT 
-    AVG(empleados.salario)
+    departamento_id, AVG(empleados.salario)
 FROM
     empleados
         INNER JOIN
     departamentos ON empleados.departamento_id = departamentos.id
-WHERE departamentos.id = 3;
+WHERE
+    departamentos.id = 3;
 
 /* 16 Obtener el mismo ejercicio anterior pero usando la cláusula HAVING con GROUP BY */
 SELECT 
@@ -261,7 +265,9 @@ FROM
     empleados
         INNER JOIN
     departamentos ON empleados.departamento_id = departamentos.id
-group by  departamentos.id having departamentos.id = 3;
+GROUP BY departamentos.id
+HAVING departamentos.id = 3;
+
 
 /* 17 Obtener el sueldo medio, sueldo máximo y sueldo mínimo de los empleados del departamento 1 y 2. 
 Mostrar las columnas id del departamento y las correspondientes funciones de agregación. */
@@ -274,32 +280,30 @@ FROM
     empleados
         INNER JOIN
     departamentos ON empleados.departamento_id = departamentos.id
-group by departamentos.id having departamentos.id in (1, 2);
+GROUP BY departamentos.id
+HAVING departamentos.id IN (1 , 2);
 
 /* 18  Mostrar el id de departamento en los que el número total de horas trabajadas sea superior o igual a 50. */
 SELECT 
     departamentos.id,
-    SUM(empleados_proyectos.horas) as HorasTotales
+    SUM(empleados_proyectos.horas) AS HorasTotales
 FROM
     empleados_proyectos
         INNER JOIN
-    empleados ON empleados_proyectos.empleado_id = empleados.id
+    proyectos ON empleados_proyectos.proyecto_id = proyectos.id
         INNER JOIN
-    departamentos ON empleados.departamento_id = departamentos.id
-GROUP BY departamentos.id having (sum(empleados_proyectos.horas) > 50);
+    departamentos ON proyectos.departamento_id = departamentos.id
+GROUP BY departamentos.id
+HAVING horas >= 50; -- DA error revisar
 
 /* 19 Obtener aquellos departamentos en los que el salario medio de sus empleados sea superior a 40000.
 Mostrar número de departamento y salario medio. */
 SELECT 
-    departamentos.id,
-    avg(empleados.salario) as SalarioMedio
+    empleados.departamento_id, AVG(empleados.salario) AS SalarioMedio
 FROM
-    empleados_proyectos
-        INNER JOIN
-    empleados ON empleados_proyectos.empleado_id = empleados.id
-        INNER JOIN
-    departamentos ON empleados.departamento_id = departamentos.id
-GROUP BY departamentos.id having (avg(empleados.salario) > 40000);
+    empleados
+GROUP BY departamento_id
+HAVING salarioMedio > 40000;
 
 
 /* 20 Obtener el salario medio por año de nacimiento, pero mostrar sólo aquellos en los que el salario medio sea superior a 45000.
