@@ -1,0 +1,218 @@
+[19:39, 7/2/2023] Dani DAW: # Para la realización de esta actividad, usaremos la base de datos futbol
+USE futbol;
+
+# 1. Consultas Básicas
+# Listado de todos los jugadores
+SELECT * FROM jugadores;
+
+# Listado de todos los equipos
+SELECT * FROM equipos;
+
+# Listado de todos los partidos
+SELECT * FROM partidos;
+
+# Listado de los tres últimos partidos disputados
+SELECT * FROM partidos ORDER BY fecha desc LIMIT 3;
+
+#######################################################################
+
+# 2. Consultas con LIMIT
+# Listado de los 5 goles más tempranos
+SELECT * FROM goles ORDER BY minuto limit 5;
+
+# Listado de goles del 5 al 10
+SELECT * FROM goles ORDER BY id LIMIT 4,6;
+
+# Listado de los tres últimos partidos disputados
+SELECT * FROM partidos ORDER BY fecha DESC LIMIT 3;
+
+# Listado de sólo 1 partido donde intervino Villatortas como equipo de fuera
+SELECT * FROM partidos WHERE id_equipo_fuera=2 LIMIT 1;
+
+# Listado de 1 partido donde el equipo de fuera no marcó
+SELECT * FROM partidos WHERE goles_fuera=0 LIMIT 1;
+
+# Listar 5 goles a partir del gol 4
+SELECT * FROM goles ORDER BY id LIMIT 4,5;
+
+########################################################################
+
+# 3. Consultas (lista columnas)
+# Mostrar el id, nombre y id_equipo de todos los jugadores
+SELECT id, nombre, equipo_id FROM jugadores;
+
+# Mostrar la misma consulta anterior pero asignando los siguientes alias: Numero, Nombre Jugador y Código Equipo. Usar cláusula AS 12.
+SELECT id AS Numero, nombre AS NombreJugador, equipo_id AS CodigoEquipo FROM jugadores;
+
+# Mostrar la misma consulta anterior pero sin usar la cláusula AS. (No se debe pero para comprobar que dicha cláusula es opcional) 
+SELECT id Numero, nombre NombreJugador, equipo_id CodigoEquipo FROM jugadores;
+
+# Mostrar la misma consulta anterior pero usando los prefijos del nombre de la tabla para la especificación de las columnas
+SELECT jugadores.id Numero, jugadores.nombre NombreJugador, jugadores.equipo_id CodigoEquipo FROM jugadores;
+
+# Mostrar la misma consulta anterior pero usando el prefijo del nombre de la base de datos y del nombre de la tabla, en la especificación de listas de columnas
+SELECT jugadores.id Numero, jugadores.nombre NombreJugador, jugadores.equipo_id CodigoEquipo FROM futbol.jugadores;
+
+# Realizar una consulta que me permita obtener el siguiente cálculo (32 + (0,33 * 10))/4
+SELECT (32 + (0.33 * 10))/4 AS resultado;
+
+#########################################################################
+
+# 4. Con predicados (WHERE)
+# Mostrar todos los jugadores del equipo 1
+SELECT * FROM jugadores WHERE equipo_id=1;
+
+# Mostrar el jugador del equipo 1 cuyo id_jugador es el 9
+SELECT * FROM jugadores WHERE equipo_id=1 AND id=9;
+
+# Mostrar los tres jugadores más jóvenes del equipo 2
+SELECT * FROM jugadores WHERE equipo_id=2 ORDER BY fecha_nac DESC LIMIT 3;
+
+# Mostrar los equipos con el estadio de capacidad superior a 10000 espectadores
+SELECT * FROM equipos WHERE aforo>10000;
+
+# Mostrar los equipos con estadios de capacidad superior a 12000 espectadores y su fundación posterior al año 1970.
+SELECT * FROM equipos WHERE aforo>12000 AND fundacion>1970;
+
+# Goles marcados por el jugador 1
+SELECT * FROM goles WHERE jugador_id=1;
+
+# Goles marcados por el jugador 1 y  jugando como local (ver equipo al que pertenece el jugador 1).
+SELECT * FROM goles WHERE jugador_id=1 AND id_partido IN (SELECT id FROM partidos WHERE id_equipo_casa=1);
+
+# Comprobar si hay algún jugador que se llame Pacheco
+SELECT * FROM jugadores WHERE nombre LIKE '%Pacheco%';
+
+# Comprobar si algún jugador del equipo 1 se llama Fonseca
+SELECT * FROM jugadores WHERE equipo_id=1 AND nombre LIKE '%Fonseca%';
+
+# Obtener todos los partidos ganados en casa por el equipo 1
+SELECT * FROM partidos WHERE id_equipo_casa=1 AND goles_casa>goles_fuera;
+
+# Obtener todos los partidos ganados por el equipo local
+SELECT * FROM partidos WHERE goles_casa>goles_fuera;
+
+# Obtener todos los partidos acabados en empate
+SELECT * FROM partidos WHERE goles_casa=goles_fuera;
+
+# Obtener todos los partidos ganados por el equipo visitante
+SELECT * FROM partidos WHERE goles_casa<goles_fuera;
+
+# Obtener todos los partidos donde se haya ganado por más de 1 gol de diferencia.
+SELECT * FROM partidos WHERE ABS(goles_casa-goles_fuera) > 1;
+
+
+# 5. Operadores IN, BETWEEN, LIKE
+# Seleccionar aquellos jugadores de los siguientes equipos: Villatrabuco, Villatorta y Valdeajos.
+SELECT * FROM jugadores WHERE equipo_id IN (1,2,4);
+
+# Selecciona aquellos equipos con capacidad de estadio entre 20.000 y 40.000 espectadores.
+SELECT * FROM equipos WHERE aforo BETWEEN 20000 AND 40000;
+
+# Selecciona aquellos equipos cuyo estadio no tenga menos de 30.000 espectadores de capacidad
+SELECT * FROM equipos WHERE aforo >= 30000;
+
+# Selecciona aquellos jugadores nacidos entre el 1970 y 1973
+SELECT * FROM jugadores WHERE YEAR(fecha_nac) BETWEEN 1970 AND 1973;
+
+# Selecciona aquellos jugadores cuyo nombre empiece por "D"
+SELECT * FROM jugadores WHERE nombre LIKE 'D%';
+
+# Selecciona el jugador llamado Macarena
+SELECT * FROM jugadores WHERE nombre LIKE '%Mercena%';
+
+
+# Con criterios de ordenación (ORDER BY)
+# Obtener los los jugadores por orden alfabético de forma descendete
+SELECT * FROM jugadores ORDER BY nombre DESC; 
+
+# Obtener los equipos ordenados por el estadio de mayor a menor aforo
+SELECT * FROM equipos ORDER BY aforo DESC;
+
+# Obtener los jugadores ordenados por equipo y luego por nombre
+SELECT * FROM jugadores ORDER BY equipo_id, nombre;
+
+# Obtener los jugadores del equipo 1 ordenados por fecha de nacimiento desde el más veterano al mas joven.
+SELECT * FROM jugadores WHERE equipo_id=1 ORDER BY fecha_nac ASC;
+
+# Obtener los jugadores del equipo 2 ordenados por fecha de nacimiento desde el más joven al mas veterano.
+SELECT * FROM jugadores WHERE equipo_id=2 ORDER BY fecha_nac DESC;
+[19:41, 7/2/2023] Dani DAW: Ejemplos con REGEXP (lo que hicimos ayer mientras varios hicisteis el examen)
+[19:43, 7/2/2023] Dani DAW: # Ejemplos con RLIKE y expresiones regulares
+# Tema 6. Lenguaje SQL - DML
+
+# Ejemplo 1
+USE maratoon;
+
+# Muestra los corredores que contengan en el nombre Juan, Eva o Josefa
+SELECT * FROM corredores WHERE nombre REGEXP 'Juan|Eva|Josefa';
+
+# Muestra los corredores que contengan una J, 'ua' indefinidas veces y contenga una n
+SELECT * FROM corredores WHERE nombre REGEXP 'J[ua]*n';
+
+# Muestra aquellos corredores que el nombre empiece por J
+SELECT * FROM corredores WHERE nombre REGEXP '^J';
+
+# Muestra aquellos corredores que el nombre empiece por Jo
+SELECT * FROM corredores WHERE nombre REGEXP '^Jo';
+
+# Muestra aquellos corredores que el nombre empiece por J o por E
+SELECT * FROM corredores WHERE nombre REGEXP '^J|^E';
+
+# Muestra aquellos corredores que en el apellido termine en "ez"
+SELECT * FROM corredores WHERE apellidos REGEXP 'ez$';
+
+# Muestra aquellos corredores cuyo apellido empiece por F y termine por EZ
+SELECT * FROM corredores WHERE apellidos REGEXP '^F.*ez$';
+
+# Muestra aquellos apellidos que contengan García
+SELECT * FROM corredores WHERE apellidos REGEXP 'García';
+
+# Muestra aquellos corredores cuyos apellidos empiecen por García
+SELECT * FROM corredores WHERE apellidos REGEXP 'García.';
+
+# Muestra aquellos corredores cuyos nombre contengan a o u
+SELECT * FROM corredores WHERE nombre REGEXP '[au]';
+
+# Muestra aquellos corredores cuyos nombre contengan a o u, pero que empiecen por E
+SELECT * FROM corredores WHERE nombre REGEXP '^E[au]*';
+
+# Muestra aquellos corredores cuyos nombre empiecen por una letra mayuscula
+SELECT * FROM corredores WHERE nombre REGEXP BINARY '^[A-Z]';
+
+# PATRON OCHO PRIMEROS CARACTERES NUMERICOS, Y EL ULTIMO UNA LETRA MAYUSCULA (DNI)
+# REGEXP '^[0-9]*[A-Z]$'
+SELECT '54564539x' REGEXP BINARY '^[0-9]{7,8}[A-Za-z]$';
+
+# Patron que valide una matrícula (Ejemplo: 1234HJR)
+SELECT '1234HJR' REGEXP BINARY '^[0-9]{4}[A-Z]{3}$';
+
+# Patron que valide una matrícula, y que no contenga vocales (Ejemplo: 1234HJR)
+SELECT '1234HJR' REGEXP BINARY '^[0-9]{4}[BCDFGHJKLMNÑPQRSTVWXYZ]{3}$';
+
+# Patron que valide una contraseña de mínimo 8 caracteres
+SELECT 'Ram7rg45' REGEXP BINARY '.{8,}';
+
+# Patron que valide una contraseña de mínimo 8 caracteres y al menos una Mayuscula
+SELECT 'dijasdfdDd3' REGEXP BINARY '^(?=.*[A-Z]).{8,15}';
+[19:45, 7/2/2023] Dani DAW: Varios ejemplos que hemos hecho hoy en clase
+[19:45, 7/2/2023] Dani DAW: # Nos muestra de donde vienen los corredores, evitando valores repetidos
+SELECT DISTINCT Ciudad FROM Corredores;
+
+ # Nos muestra la fecha actual
+SELECT CURRENT_DATE AS 'FechActual';
+
+# Edad media de todos los corredores
+SELECT AVG(edad) FROM CORREDORES;
+
+# Mostrar cuantos corredores de ubrique
+SELECT COUNT(*) FROM corredores WHERE ciudad='Ubrique';
+
+# Mostrar la edad maxima de los corredores
+SELECT max(edad) FROM corredores;
+
+# Mostrar la edad maxima, la edad minima, la media y el numero de corredores
+SELECT MAX(edad) edad_max, MIN(edad) edad_min, AVG(edad) edad_media, COUNT(*) num FROM corredores;
+
+# Mostrar la edad maxima, la edad minima, la media y el numero de corredores que sean de Ubrique
+SELECT MAX(edad) edad_max, MIN(edad) edad_min, AVG(edad) edad_media, COUNT(*) num FROM corredores WHERE ciudad='Ubrique'
